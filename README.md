@@ -36,16 +36,16 @@ Estudo de caso completo de **Aprendizado Não Supervisionado (CRISP-DM)** e **Co
 2. **Engenharia de Features Unificada (`Data Preparation`):**
    - Função única `construir_base_lojas(treino, loja)` que consolida as 6 features contínuas do modelo:
      - `venda_media_dia` (porte diário operante)
-     - `ticket_medio` ($\sum \text{faturamento} / \sum \text{clientes}$)
+     - `ticket_medio` (soma faturamento / soma clientes)
      - `efeito_promo` (lift observacional em dias com promoção vs. sem promoção)
-     - `volatilidade` ($\text{CV} = \sigma / \mu$ diário)
+     - `volatilidade` (coeficiente de variação diário: CV = σ / μ)
      - `sazonalidade` (desvio padrão das médias mensais normalizadas pela média anual de cada loja)
      - `distancia_concorrente` (metros até o concorrente mais próximo)
    - Transformação `np.log1p` nas 6 variáveis + padronização `StandardScaler` (`SEED = 42`).
 3. **Modelagem e Validação (`Modeling` & `Evaluation`):**
    - **Algoritmo Oficial:** `KMeans(n_clusters=5, n_init=20, random_state=42)` validado contra o Método do Cotovelo, Coeficiente de Silhueta (`0,2042`) e Clusterização Hierárquica de Ward.
    - **Estabilidade:** ARI de reordenação = **`0,9886`**; ARI médio em 10 subamostragens de 80% = **`0,9092`** ($\pm 0,0612$).
-   - **Superioridade sobre o Baseline (`tipo_loja`):** Ganho de **10,2x** na variância explicada ($\eta^2$) de faturamento (**`28,33%`** vs **`2,78%`**), **6,9x** em efeito promocional (**`57,77%`** vs **`8,37%`**) e **30,3x** em volatilidade (**`60,83%`** vs **`2,01%`**).
+   - **Superioridade sobre o Baseline (`tipo_loja`):** Ganho de **10,2x** na variância explicada (ANOVA η²) de faturamento (**`28,33%`** vs **`2,78%`**), **6,9x** em efeito promocional (**`57,77%`** vs **`8,37%`**) e **30,3x** em volatilidade (**`60,83%`** vs **`2,01%`**).
 4. **Implantação (`Deployment`):**
    - **Entrega 1:** Planilha executiva [`planilha_metas_comercial_varejo.xlsx`](./planilha_metas_comercial_varejo.xlsx) calibrada pelo fator ponderado `1,1916` para atingir exatos `+5,00%` na receita global da rede.
    - **Entrega 2:** Pipeline serializado [`modelo_clusterizacao_varejo.joblib`](./modelo_clusterizacao_varejo.joblib) (compactado em [`.zip`](./modelo_clusterizacao_varejo.zip)), script de inferência [`codigo.py`](./codigo.py) e base de teste [`lojas_novas_exemplo.csv`](./lojas_novas_exemplo.csv).

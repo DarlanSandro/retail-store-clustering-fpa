@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail Store Clustering & FP&A Case | Darlan Rodrigues</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: { 900: '#0a192f', 800: '#112240', 700: '#233554' },
+                        cyan: { DEFAULT: '#64ffda', dim: 'rgba(100, 255, 218, 0.1)' },
+                        slate: { lightest: '#e6f1ff', light: '#ccd6f6', DEFAULT: '#8892b0' },
+                        ifood: { red: '#ea1d2c' }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['Fira Code', 'monospace'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0a192f;
+            color: #8892b0;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a192f;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #233554;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64ffda;
+        }
+
+        .nav-scrolled {
+            background-color: rgba(10, 25, 47, 0.85);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px -10px rgba(2, 12, 27, 0.7);
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        input[type="range"] {
+            accent-color: #64ffda;
+        }
+
+        /* Regras Específicas para Impressão / PDF */
+        @media print {
+            body,
+            main,
+            article,
+            section,
+            div {
+                background-color: white !important;
+                color: #112240 !important;
+            }
+
+            nav,
+            footer,
+            #mobile-menu,
+            button,
+            .lucide,
+            .no-print {
+                display: none !important;
+            }
+
+            h1,
+            h2,
+            h3,
+            h4,
+            p,
+            span,
+            a {
+                color: #0a192f !important;
+            }
+
+            .simulador-container,
+            img {
+                page-break-inside: avoid !important;
+            }
+
+            * {
+                box-shadow: none !important;
+                backdrop-filter: none !important;
+                border-color: #cbd5e1 !important;
+            }
+        }
+    </style>
+    <script defer src="https://cloud.umami.is/script.js"
+        data-website-id="e82a46aa-c648-4c7d-a6ed-cf24c9f249a0"></script>
+</head>
+
+<body>
+
+    <nav id="navbar"
+        class="fixed top-0 w-full z-50 transition-all duration-300 py-4 px-6 md:px-12 bg-navy-800 border-b border-navy-700 shadow-lg">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+
+            <a href="index.html" class="group flex items-center gap-3">
+                <div
+                    class="bg-cyan/10 p-2 rounded text-cyan border border-cyan/20 group-hover:bg-cyan group-hover:text-navy-900 transition-all">
+                    <i data-lucide="terminal" size="20"></i>
+                </div>
+                <span
+                    class="text-slate-lightest font-bold text-lg font-mono tracking-tight group-hover:text-cyan transition-colors">
+                    Tax<span class="text-cyan">.Tech</span>
+                </span>
+            </a>
+
+            <div class="hidden lg:flex items-center gap-6 text-sm font-medium">
+                <a href="index.html"
+                    class="flex items-center gap-2 text-cyan font-bold hover:text-white transition-colors">
+                    <i data-lucide="home" size="16"></i> Home
+                </a>
+                <a href="index.html#about" class="text-slate-lightest hover:text-cyan transition-colors">Sobre</a>
+                <a href="index.html#projects" class="text-cyan font-bold transition-colors">Projetos</a>
+                <a href="index.html#articles" class="text-slate-lightest hover:text-cyan transition-colors">Artigos</a>
+                <a href="index.html#experience"
+                    class="text-slate-lightest hover:text-cyan transition-colors">Experiência</a>
+                <a href="index.html#education"
+                    class="text-slate-lightest hover:text-cyan transition-colors">Formação</a>
+                <a href="index.html#contact" class="text-slate-lightest hover:text-cyan transition-colors">Contato</a>
+
+                <div class="h-6 w-px bg-navy-700 mx-2"></div>
+                <a href="CV_DarlanRodrigues_TaxTech_GestaoTributaria.pdf" target="_blank"
+                    class="bg-cyan text-navy-900 px-5 py-2 rounded font-bold hover:bg-white transition-all">
+                    Currículo
+                </a>
+                <a href="index-en.html"
+                    class="px-3 py-1 text-xs font-mono text-cyan border border-cyan rounded hover:bg-cyan/10 transition-all">
+                    EN 🇺🇸
+                </a>
+            </div>
+
+            <button id="menu-btn"
+                class="lg:hidden text-cyan p-1 border border-navy-700 rounded hover:bg-navy-700 transition-all">
+                <i data-lucide="menu" size="28"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div id="mobile-menu"
+        class="fixed inset-0 bg-navy-900 z-[60] flex flex-col justify-center items-center gap-6 translate-x-full transition-transform duration-300 lg:hidden">
+
+        <button id="close-menu"
+            class="absolute top-6 right-6 text-cyan p-2 bg-navy-800 rounded-full border border-cyan/20 hover:bg-cyan/10 transition-all">
+            <i data-lucide="x" size="28"></i>
+        </button>
+
+        <a href="index.html#about"
+            class="mobile-link text-2xl font-bold text-slate-lightest hover:text-cyan transition-colors">Sobre Mim</a>
+        <a href="index.html#projects"
+            class="mobile-link text-2xl font-bold text-slate-lightest hover:text-cyan transition-colors">Projetos</a>
+        <a href="index.html#articles"
+            class="mobile-link text-2xl font-bold text-slate-lightest hover:text-cyan transition-colors">Artigos</a>
+        <a href="index.html#experience"
+            class="mobile-link text-2xl font-bold text-slate-lightest hover:text-cyan transition-colors">Experiência</a>
+        <a href="index.html#education"
+            class="mobile-link text-2xl font-bold text-slate-lightest hover:text-cyan transition-colors">Formação</a>
+        <a href="index.html#contact"
+            class="mobile-link text-2xl font-bold text-slate-lightest hover:text-cyan transition-colors">Contato</a>
+
+        <div class="w-16 h-px bg-navy-700 my-2"></div>
+
+        <a href="CV_DarlanRodrigues_TaxTech_GestaoTributaria.pdf" target="_blank"
+            class="mobile-link border border-cyan text-cyan px-8 py-3 rounded-lg font-mono font-bold hover:bg-cyan/10 transition-all shadow-[0_0_15px_rgba(100,255,218,0.2)] flex items-center gap-2">
+            <i data-lucide="download" size="18"></i> Currículo PDF
+        </a>
+
+        <a href="index-en.html" class="mobile-link text-cyan font-mono text-sm mt-2 hover:underline">
+            Mudar para Inglês 🇺🇸
+        </a>
+    </div>
+
+    <main class="container mx-auto px-6 md:px-12 pt-32 pb-12">
+
+        <!-- HEADER DO CASE -->
+        <header class="mb-12 max-w-6xl mx-auto text-center md:text-left">
+            <a href="projetos-pt.html"
+                class="inline-flex items-center text-cyan font-mono text-sm hover:underline mb-6">
+                <i data-lucide="arrow-left" class="mr-2 w-4 h-4"></i> Voltar para Projetos
+            </a>
+
+            <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-4">
+                <span class="px-3 py-1 rounded-full bg-cyan/10 text-cyan text-xs font-mono border border-cyan/20">MACHINE
+                    LEARNING</span>
+                <span
+                    class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-mono border border-emerald-500/20">FP&A
+                    & CONTROLADORIA</span>
+                <span
+                    class="px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-mono border border-purple-500/20">RETAIL
+                    ANALYTICS (CRISP-DM)</span>
+            </div>
+
+            <h1 class="text-3xl md:text-5xl font-bold text-slate-lightest mb-4 leading-tight">
+                Clusterização de Lojas &amp; Desdobramento de Metas: <span class="text-white">Substituindo a Régua
+                    Linear (+5%) por Benchmarking entre Pares com Machine Learning</span>
+            </h1>
+            <h2 class="text-xl text-slate-light font-light mb-6 max-w-4xl mx-auto md:mx-0">
+                Como auditei 1.017.209 registros transacionais de 1.115 lojas, tratei distorções severas de calendário e
+                apagão de dados, elevei em 10,2x a explicação de variância de faturamento frente ao cadastro legado e
+                construí um motor de inferência e calibragem orçamentária para o Conselho de Administração.
+            </h2>
+
+            <div class="flex flex-wrap gap-4 text-sm font-mono text-slate mt-4 justify-center md:justify-start">
+                <span class="flex items-center"><i data-lucide="calendar" class="w-4 h-4 mr-2 text-cyan"></i> Out
+                    2026</span>
+                <span class="flex items-center"><i data-lucide="clock" class="w-4 h-4 mr-2 text-cyan"></i> 14 min de
+                    leitura</span>
+                <span class="flex items-center"><i data-lucide="tag" class="w-4 h-4 mr-2 text-cyan"></i> Python,
+                    Scikit-Learn, K-Means, Ward, FP&amp;A</span>
+
+                <span class="hidden md:block text-navy-600">|</span>
+
+                <button onclick="window.print()"
+                    class="inline-flex items-center gap-1.5 border border-cyan/40 text-cyan bg-cyan/5 hover:bg-cyan hover:text-navy-900 px-3 py-1 rounded-md text-xs font-bold transition-all shadow-[0_0_8px_rgba(100,255,218,0.1)]">
+                    <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                    Baixar em PDF
+                </button>
+
+                <a href="https://github.com/DarlanSandro/retail-store-clustering-fpa" target="_blank"
+                    class="inline-flex items-center gap-1.5 border border-cyan/40 text-cyan bg-cyan/5 hover:bg-cyan hover:text-navy-900 px-3 py-1 rounded-md text-xs font-bold transition-all shadow-[0_0_8px_rgba(100,255,218,0.1)]">
+                    <i data-lucide="github" class="w-3.5 h-3.5"></i>
+                    Repositório GitHub
+                </a>
+            </div>
+        </header>
+
+        <!-- PAINEL INTERATIVO (SIMULADOR EM TEMPO REAL NO LUGAR DO IFRAME ESTÁTICO) -->
+        <section class="mb-16 max-w-6xl mx-auto simulador-container">
+            <div class="bg-navy-800/90 backdrop-blur-md p-4 md:p-8 rounded-3xl border border-navy-700 shadow-2xl">
+
+                <!-- Cabeçalho e Abas do Simulador -->
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 pb-4 border-b border-navy-700">
+                    <div>
+                        <div class="flex items-center gap-2 text-cyan font-mono text-xs uppercase tracking-widest mb-1">
+                            <span class="w-2 h-2 rounded-full bg-cyan animate-ping"></span>
+                            Motor K-Means Ativo no Navegador (Seed = 42 | k = 5)
+                        </div>
+                        <h2 class="text-lg md:text-2xl font-bold text-white tracking-wide">
+                            Simulador Interativo: Inferência de Novas Lojas &amp; Calibragem FP&amp;A
+                        </h2>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 no-print">
+                        <button onclick="switchTab('tab-inferencia')" id="btn-tab-inferencia"
+                            class="tab-btn px-4 py-2 rounded-xl text-xs font-mono font-bold bg-cyan text-navy-900 transition-all">
+                            1. Motor de Inferência (Lojas Novas)
+                        </button>
+                        <button onclick="switchTab('tab-perfis')" id="btn-tab-perfis"
+                            class="tab-btn px-4 py-2 rounded-xl text-xs font-mono font-bold bg-navy-900 text-slate-light border border-navy-700 hover:border-cyan/40 transition-all">
+                            2. Arquétipos &amp; ANOVA (η²)
+                        </button>
+                        <button onclick="switchTab('tab-fpa')" id="btn-tab-fpa"
+                            class="tab-btn px-4 py-2 rounded-xl text-xs font-mono font-bold bg-navy-900 text-slate-light border border-navy-700 hover:border-cyan/40 transition-all">
+                            3. Calibragem de Metas (+5,00%)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ABA 1: MOTOR DE INFERÊNCIA K-MEANS EM TEMPO REAL -->
+                <div id="tab-inferencia" class="tab-content space-y-6">
+                    <!-- Presets das Lojas de Teste -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 bg-navy-900/90 p-4 rounded-2xl border border-navy-700">
+                        <span class="text-xs font-mono text-slate-light flex items-center gap-2">
+                            <i data-lucide="FlaskConical" class="w-4 h-4 text-cyan"></i>
+                            Carregar Lojas de Homologação (CSV Oficial):
+                        </span>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="loadPreset(5200, 8.10, 0.42, 0.26, 0.08, 650)"
+                                class="px-3 py-1.5 rounded-lg text-xs font-mono bg-navy-800 text-cyan border border-cyan/30 hover:bg-cyan hover:text-navy-900 transition-all">
+                                Loja 9001 (Bairro)
+                            </button>
+                            <button onclick="loadPreset(10500, 7.90, 0.22, 0.19, 0.07, 500)"
+                                class="px-3 py-1.5 rounded-lg text-xs font-mono bg-navy-800 text-emerald-400 border border-emerald-400/30 hover:bg-emerald-400 hover:text-navy-900 transition-all">
+                                Loja 9002 (Flagship)
+                            </button>
+                            <button onclick="loadPreset(6100, 9.50, 0.75, 0.38, 0.10, 3500)"
+                                class="px-3 py-1.5 rounded-lg text-xs font-mono bg-navy-800 text-amber-400 border border-amber-400/30 hover:bg-amber-400 hover:text-navy-900 transition-all">
+                                Loja 9003 (Promo)
+                            </button>
+                            <button onclick="loadPreset(7200, 11.80, 0.31, 0.24, 0.09, 6800)"
+                                class="px-3 py-1.5 rounded-lg text-xs font-mono bg-navy-800 text-purple-400 border border-purple-400/30 hover:bg-purple-400 hover:text-navy-900 transition-all">
+                                Exemplo Destino/Isolada
+                            </button>
+                            <button onclick="loadPreset(6300, 8.20, 0.30, 0.32, 0.19, 2600)"
+                                class="px-3 py-1.5 rounded-lg text-xs font-mono bg-navy-800 text-pink-400 border border-pink-400/30 hover:bg-pink-400 hover:text-navy-900 transition-all">
+                                Exemplo Sazonal/Turística
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid lg:grid-cols-12 gap-6">
+                        <!-- Coluna Esquerda: 6 Sliders das Features -->
+                        <div class="lg:col-span-6 bg-navy-900 p-6 rounded-2xl border border-navy-700 space-y-4">
+                            <h3 class="text-sm font-mono uppercase tracking-wider text-cyan flex items-center justify-between">
+                                <span>Inputs Operacionais da Loja (6 Features)</span>
+                                <span class="text-[11px] text-slate">Transformação: log1p + Z-Score</span>
+                            </h3>
+
+                            <!-- Slider 1: venda_media_dia -->
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1">
+                                    <label class="text-slate-lightest">1. Venda Média / Dia Aberto (R$)</label>
+                                    <span id="val-venda" class="text-cyan font-bold">R$ 5.200</span>
+                                </div>
+                                <input id="inp-venda" type="range" min="2700" max="21500" step="50" value="5200"
+                                    oninput="runInference()" class="w-full h-2 bg-navy-700 rounded-lg cursor-pointer">
+                            </div>
+
+                            <!-- Slider 2: ticket_medio -->
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1">
+                                    <label class="text-slate-lightest">2. Ticket Médio Ponderado (R$)</label>
+                                    <span id="val-ticket" class="text-cyan font-bold">R$ 8,10</span>
+                                </div>
+                                <input id="inp-ticket" type="range" min="3.5" max="16.2" step="0.1" value="8.1"
+                                    oninput="runInference()" class="w-full h-2 bg-navy-700 rounded-lg cursor-pointer">
+                            </div>
+
+                            <!-- Slider 3: efeito_promo -->
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1">
+                                    <label class="text-slate-lightest">3. Lift Observado em Promoção (%)</label>
+                                    <span id="val-promo" class="text-cyan font-bold">+42,0%</span>
+                                </div>
+                                <input id="inp-promo" type="range" min="-0.05" max="1.40" step="0.01" value="0.42"
+                                    oninput="runInference()" class="w-full h-2 bg-navy-700 rounded-lg cursor-pointer">
+                            </div>
+
+                            <!-- Slider 4: volatilidade -->
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1">
+                                    <label class="text-slate-lightest">4. Volatilidade Diária (CV = σ/μ)</label>
+                                    <span id="val-vol" class="text-cyan font-bold">26,0%</span>
+                                </div>
+                                <input id="inp-vol" type="range" min="0.12" max="0.55" step="0.01" value="0.26"
+                                    oninput="runInference()" class="w-full h-2 bg-navy-700 rounded-lg cursor-pointer">
+                            </div>
+
+                            <!-- Slider 5: sazonalidade -->
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1">
+                                    <label class="text-slate-lightest">5. Sazonalidade Anual Normalizada</label>
+                                    <span id="val-saz" class="text-cyan font-bold">8,0%</span>
+                                </div>
+                                <input id="inp-saz" type="range" min="0.03" max="0.33" step="0.005" value="0.08"
+                                    oninput="runInference()" class="w-full h-2 bg-navy-700 rounded-lg cursor-pointer">
+                            </div>
+
+                            <!-- Slider 6: distancia_concorrente -->
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1">
+                                    <label class="text-slate-lightest">6. Distância do Concorrente (m)</label>
+                                    <span id="val-dist" class="text-cyan font-bold">650 m</span>
+                                </div>
+                                <input id="inp-dist" type="range" min="20" max="35000" step="50" value="650"
+                                    oninput="runInference()" class="w-full h-2 bg-navy-700 rounded-lg cursor-pointer">
+                            </div>
+                        </div>
+
+                        <!-- Coluna Direita: Resultado da Predição e Distâncias Euclidianas -->
+                        <div class="lg:col-span-6 bg-navy-900 p-6 rounded-2xl border border-cyan/30 flex flex-col justify-between space-y-5">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-mono uppercase text-slate">Diagnóstico Determinístico (.predict)</span>
+                                    <span id="out-prioridade" class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-red-500/20 text-red-300 border border-red-500/30">
+                                        Ação Necessária
+                                    </span>
+                                </div>
+                                <div id="out-cluster-badge" class="text-2xl md:text-3xl font-bold text-white mb-1">
+                                    Cluster 0 — Padrão Bairro
+                                </div>
+                                <p id="out-cluster-desc" class="text-xs text-slate-light leading-relaxed">
+                                    Unidade de vizinhança urbana sob forte pressão competitiva local (&lt; 840m) e compras regulares de reposição.
+                                </p>
+                            </div>
+
+                            <!-- Cards de Benchmark e Meta Calibrada -->
+                            <div class="grid grid-cols-3 gap-3">
+                                <div class="bg-navy-800 p-3 rounded-xl border border-navy-700">
+                                    <div class="text-[11px] font-mono text-slate">Benchmark P50</div>
+                                    <div id="out-benchmark" class="text-base md:text-lg font-bold text-slate-lightest font-mono">R$ 5.476</div>
+                                </div>
+                                <div class="bg-navy-800 p-3 rounded-xl border border-navy-700">
+                                    <div class="text-[11px] font-mono text-slate">Gap vs. Pares</div>
+                                    <div id="out-gap" class="text-base md:text-lg font-bold text-amber-400 font-mono">+5,32%</div>
+                                </div>
+                                <div class="bg-navy-800 p-3 rounded-xl border border-cyan/30">
+                                    <div class="text-[11px] font-mono text-cyan">Meta Final (+5% Rede)</div>
+                                    <div id="out-meta" class="text-base md:text-lg font-bold text-cyan font-mono">+3,97%</div>
+                                </div>
+                            </div>
+
+                            <!-- Distâncias Euclidianas até os 5 Centroides -->
+                            <div class="space-y-2">
+                                <div class="text-xs font-mono text-slate-light flex justify-between">
+                                    <span>Distância Euclidiana no Espaço Padronizado (Menor = Vencedor):</span>
+                                </div>
+                                <div id="bars-distancias" class="space-y-1.5 text-xs font-mono"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pacote de Diretrizes Táticas das 4 Áreas para o Cluster Predito -->
+                    <div class="grid md:grid-cols-4 gap-4">
+                        <div class="bg-navy-900/90 p-4 rounded-xl border border-navy-700">
+                            <div class="text-xs font-mono text-cyan uppercase mb-1">1. Comercial (Metas)</div>
+                            <p id="act-comercial" class="text-xs text-slate-lightest leading-relaxed"></p>
+                        </div>
+                        <div class="bg-navy-900/90 p-4 rounded-xl border border-navy-700">
+                            <div class="text-xs font-mono text-emerald-400 uppercase mb-1">2. Trade Marketing</div>
+                            <p id="act-trade" class="text-xs text-slate-lightest leading-relaxed"></p>
+                        </div>
+                        <div class="bg-navy-900/90 p-4 rounded-xl border border-navy-700">
+                            <div class="text-xs font-mono text-amber-400 uppercase mb-1">3. Supply Chain</div>
+                            <p id="act-supply" class="text-xs text-slate-lightest leading-relaxed"></p>
+                        </div>
+                        <div class="bg-navy-900/90 p-4 rounded-xl border border-navy-700">
+                            <div class="text-xs font-mono text-purple-400 uppercase mb-1">4. Expansão</div>
+                            <p id="act-expansao" class="text-xs text-slate-lightest leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ABA 2: ARQUÉTIPOS & GANHO EXPLICATIVO ANOVA (ETA²) -->
+                <div id="tab-perfis" class="tab-content hidden space-y-6">
+                    <div class="overflow-x-auto rounded-2xl border border-navy-700">
+                        <table class="w-full text-left border-collapse text-xs font-mono">
+                            <thead>
+                                <tr class="bg-navy-900 text-cyan border-b border-navy-700">
+                                    <th class="p-3.5">Cluster &amp; Arquétipo Comercial</th>
+                                    <th class="p-3.5 text-right">Lojas (%)</th>
+                                    <th class="p-3.5 text-right">Venda Média</th>
+                                    <th class="p-3.5 text-right">Benchmark P50</th>
+                                    <th class="p-3.5 text-right">Ticket</th>
+                                    <th class="p-3.5 text-right">Lift Promo</th>
+                                    <th class="p-3.5 text-right">Volatilidade</th>
+                                    <th class="p-3.5 text-right">Sazonalidade</th>
+                                    <th class="p-3.5 text-right">Dist. Mediana</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-navy-700 bg-navy-900/60 text-slate-lightest">
+                                <tr>
+                                    <td class="p-3.5 font-bold text-white">0 — Padrão Bairro</td>
+                                    <td class="p-3.5 text-right">292 (26,19%)</td>
+                                    <td class="p-3.5 text-right">R$ 5.718,79</td>
+                                    <td class="p-3.5 text-right text-cyan">R$ 5.476,37</td>
+                                    <td class="p-3.5 text-right">R$ 8,43</td>
+                                    <td class="p-3.5 text-right">+45,41%</td>
+                                    <td class="p-3.5 text-right">27,53%</td>
+                                    <td class="p-3.5 text-right">8,39%</td>
+                                    <td class="p-3.5 text-right">840 m</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3.5 font-bold text-white">1 — Destino &amp; Isolada</td>
+                                    <td class="p-3.5 text-right">414 (37,13%)</td>
+                                    <td class="p-3.5 text-right">R$ 7.084,15</td>
+                                    <td class="p-3.5 text-right text-cyan">R$ 6.959,92</td>
+                                    <td class="p-3.5 text-right text-emerald-400 font-bold">R$ 11,35</td>
+                                    <td class="p-3.5 text-right">+34,95%</td>
+                                    <td class="p-3.5 text-right">25,07%</td>
+                                    <td class="p-3.5 text-right">9,24%</td>
+                                    <td class="p-3.5 text-right text-emerald-400 font-bold">5.835 m</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3.5 font-bold text-white">2 — Sazonal / Turística</td>
+                                    <td class="p-3.5 text-right">65 (5,83%)</td>
+                                    <td class="p-3.5 text-right">R$ 6.312,06</td>
+                                    <td class="p-3.5 text-right text-cyan">R$ 6.324,80</td>
+                                    <td class="p-3.5 text-right">R$ 8,24</td>
+                                    <td class="p-3.5 text-right">+32,03%</td>
+                                    <td class="p-3.5 text-right">31,25%</td>
+                                    <td class="p-3.5 text-right text-pink-400 font-bold">15,88%</td>
+                                    <td class="p-3.5 text-right">2.640 m</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3.5 font-bold text-white">3 — Viciada em Promoção</td>
+                                    <td class="p-3.5 text-right">165 (14,80%)</td>
+                                    <td class="p-3.5 text-right">R$ 6.124,85</td>
+                                    <td class="p-3.5 text-right text-cyan">R$ 5.909,24</td>
+                                    <td class="p-3.5 text-right">R$ 9,78</td>
+                                    <td class="p-3.5 text-right text-amber-400 font-bold">+70,78%</td>
+                                    <td class="p-3.5 text-right text-amber-400 font-bold">36,41%</td>
+                                    <td class="p-3.5 text-right">9,37%</td>
+                                    <td class="p-3.5 text-right">4.150 m</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3.5 font-bold text-white">4 — Flagship / Alto Fluxo</td>
+                                    <td class="p-3.5 text-right">179 (16,05%)</td>
+                                    <td class="p-3.5 text-right text-cyan font-bold">R$ 9.544,71</td>
+                                    <td class="p-3.5 text-right text-cyan">R$ 8.837,11</td>
+                                    <td class="p-3.5 text-right">R$ 8,04</td>
+                                    <td class="p-3.5 text-right">+26,29%</td>
+                                    <td class="p-3.5 text-right">21,33%</td>
+                                    <td class="p-3.5 text-right">7,56%</td>
+                                    <td class="p-3.5 text-right">770 m</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Comparativo de Variância Explicada (Eta Squared) -->
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="bg-navy-900 p-5 rounded-2xl border border-navy-700">
+                            <div class="text-xs font-mono text-slate uppercase mb-1">Explicação do Faturamento (η²)</div>
+                            <div class="text-2xl font-bold text-cyan font-mono">28,33% <span class="text-xs text-slate font-normal">vs. 2,78% (tipo_loja)</span></div>
+                            <div class="text-xs text-emerald-400 font-mono mt-1">Ganho de 10,2x (+25,55 p.p.)</div>
+                        </div>
+                        <div class="bg-navy-900 p-5 rounded-2xl border border-navy-700">
+                            <div class="text-xs font-mono text-slate uppercase mb-1">Explicação da Volatilidade (η²)</div>
+                            <div class="text-2xl font-bold text-cyan font-mono">60,83% <span class="text-xs text-slate font-normal">vs. 2,01% (tipo_loja)</span></div>
+                            <div class="text-xs text-emerald-400 font-mono mt-1">Ganho de 30,3x (+58,82 p.p.)</div>
+                        </div>
+                        <div class="bg-navy-900 p-5 rounded-2xl border border-navy-700">
+                            <div class="text-xs font-mono text-slate uppercase mb-1">Estabilidade Amostral (ARI)</div>
+                            <div class="text-2xl font-bold text-cyan font-mono">0,9092 <span class="text-xs text-slate font-normal">(Subamostra 80%)</span></div>
+                            <div class="text-xs text-emerald-400 font-mono mt-1">Reordenação: ARI = 0,9886 (Piso ≥ 0,80)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ABA 3: CALIBRAGEM ORÇAMENTÁRIA FP&A (+5,00% CONSELHO) -->
+                <div id="tab-fpa" class="tab-content hidden space-y-6">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-navy-900 p-6 rounded-2xl border border-navy-700 space-y-4">
+                            <h3 class="text-sm font-mono uppercase text-cyan">Por que a Média Simples Falha no Orçamento?</h3>
+                            <p class="text-xs text-slate-light leading-relaxed">
+                                Pela regra inicial de negócio (<strong>2,00% de manutenção</strong> para lojas acima da mediana + <strong>25% de captura do gap relativo</strong> para lojas abaixo da mediana), a média simples das metas das 1.115 lojas alcança <strong>5,15%</strong>.
+                            </p>
+                            <p class="text-xs text-slate-light leading-relaxed">
+                                Porém, como as maiores lojas de cada grupo estão acima da mediana e recebem apenas 2,00%, o <strong>crescimento ponderado pelo faturamento real da rede trava em 4,20%</strong> (déficit de <strong>-0,80 p.p.</strong> ou R$ 61,8 mil/dia frente aos +5,00% exigidos pelo Conselho).
+                            </p>
+                            <div class="grid grid-cols-2 gap-3 pt-2">
+                                <div class="bg-navy-800 p-3.5 rounded-xl border border-red-500/30">
+                                    <div class="text-[11px] font-mono text-red-300">Sem Calibragem Ponderada</div>
+                                    <div class="text-xl font-bold text-white font-mono">+4,20% Receita</div>
+                                    <div class="text-[11px] font-mono text-slate">Média simples: 5,15%</div>
+                                </div>
+                                <div class="bg-navy-800 p-3.5 rounded-xl border border-cyan/40">
+                                    <div class="text-[11px] font-mono text-cyan">Com Fator 1,1916 (Deploy)</div>
+                                    <div class="text-xl font-bold text-cyan font-mono">+5,00% Receita</div>
+                                    <div class="text-[11px] font-mono text-slate">Faixa: 2,38% a 37,70%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-navy-900 p-6 rounded-2xl border border-navy-700 space-y-4">
+                            <h3 class="text-sm font-mono uppercase text-cyan">Simulação de Recuperação de Gap (Receita Bruta — 300 Dias)</h3>
+                            <div class="space-y-2.5 text-xs font-mono">
+                                <div class="flex justify-between items-center p-3 rounded-xl bg-navy-800 border border-navy-700">
+                                    <span class="text-slate-light">Gap Total Identificado (100% — 556 lojas &lt; P50)</span>
+                                    <span class="text-white font-bold">R$ 203.748.436 / ano</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 rounded-xl bg-navy-800 border border-navy-700">
+                                    <span class="text-slate-light">Cenário Conservador (10% de captura)</span>
+                                    <span class="text-emerald-400 font-bold">+R$ 20.374.844 / ano</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 rounded-xl bg-navy-800 border border-cyan/40">
+                                    <span class="text-cyan font-bold">Cenário Moderado Oficial (25% de captura)</span>
+                                    <span class="text-cyan font-bold">+R$ 50.937.109 / ano</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 rounded-xl bg-navy-800 border border-navy-700">
+                                    <span class="text-slate-light">Cenário Otimista (50% de captura)</span>
+                                    <span class="text-purple-400 font-bold">+R$ 101.874.218 / ano</span>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-slate italic">
+                                *Nota de Governança: Valores expressam cenários teóricos de receita bruta comparável (não equivalem a lucro líquido realizado sem dedução de CMV, tributos e custo promocional).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rodapé do Simulador -->
+                <div class="mt-6 pt-4 border-t border-navy-700 flex flex-col md:flex-row md:justify-between md:items-center gap-3 text-xs px-1">
+                    <div class="flex flex-wrap gap-5 font-mono text-slate">
+                        <span class="flex items-center">
+                            <i data-lucide="cpu" class="w-4 h-4 mr-2 text-cyan"></i>
+                            Pesos Reais: StandardScaler + KMeans (k=5)
+                        </span>
+                        <span class="flex items-center">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 mr-2 text-cyan"></i>
+                            Reprodutibilidade Auditada (SEED = 42)
+                        </span>
+                    </div>
+                    <div class="text-slate-lightest/40 text-xs font-mono">
+                        FP&amp;A &amp; Machine Learning Analytics © 2026
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TECH STACK -->
+        <section class="mb-16 max-w-6xl mx-auto">
+            <div
+                class="relative w-full rounded-2xl bg-white/5 backdrop-blur-md border border-cyan/20 shadow-[0_0_30px_rgba(100,255,218,0.05)] p-8 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-cyan/5 to-transparent pointer-events-none"></div>
+                <h3
+                    class="text-cyan font-mono text-sm mb-6 uppercase tracking-widest flex items-center gap-2 relative z-10">
+                    <i data-lucide="layers" class="w-4 h-4"></i> Tech Stack &amp; Métodos Utilizados neste Projeto
+                </h3>
+                <div class="flex flex-wrap gap-4 relative z-10">
+                    <div
+                        class="flex items-center gap-3 bg-navy-900 px-5 py-3 rounded-xl border border-navy-700 shadow-lg hover:border-cyan/50 transition-colors">
+                        <i data-lucide="terminal-square" class="w-5 h-5 text-blue-400"></i>
+                        <span class="text-slate-lightest font-bold text-sm">Python (Pandas &amp; NumPy)</span>
+                    </div>
+                    <div
+                        class="flex items-center gap-3 bg-navy-900 px-5 py-3 rounded-xl border border-navy-700 shadow-lg hover:border-cyan/50 transition-colors">
+                        <i data-lucide="network" class="w-5 h-5 text-cyan"></i>
+                        <span class="text-slate-lightest font-bold text-sm">Scikit-Learn (K-Means &amp; ARI)</span>
+                    </div>
+                    <div
+                        class="flex items-center gap-3 bg-navy-900 px-5 py-3 rounded-xl border border-navy-700 shadow-lg hover:border-cyan/50 transition-colors">
+                        <i data-lucide="git-merge" class="w-5 h-5 text-[#f2c811]"></i>
+                        <span class="text-slate-lightest font-bold text-sm">SciPy (Ward Linkage)</span>
+                    </div>
+                    <div
+                        class="flex items-center gap-3 bg-navy-900 px-5 py-3 rounded-xl border border-navy-700 shadow-lg hover:border-cyan/50 transition-colors">
+                        <i data-lucide="calculator" class="w-5 h-5 text-emerald-400"></i>
+                        <span class="text-slate-lightest font-bold text-sm">Controladoria &amp; Orçamento (FP&amp;A)</span>
+                    </div>
+                    <div
+                        class="flex items-center gap-3 bg-navy-900 px-5 py-3 rounded-xl border border-navy-700 shadow-lg hover:border-cyan/50 transition-colors">
+                        <i data-lucide="package-check" class="w-5 h-5 text-purple-400"></i>
+                        <span class="text-slate-lightest font-bold text-sm">Joblib MLOps Pipeline</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ARTIGO TÉCNICO PROFUNDO (10 SEÇÕES) -->
+        <article class="max-w-6xl mx-auto text-slate-lightest/90 text-lg leading-relaxed space-y-12">
+
+            <section>
+                <h3 class="text-2xl font-bold text-slate-lightest mb-6 border-l-4 border-cyan pl-4">1. Contexto do
+                    Negócio e o Problema da "Régua Única"</h3>
+                <p class="mb-4">
+                    A <span class="font-semibold text-cyan">Aurora Varejo</span> opera uma rede nacional de varejo
+                    alimentar e conveniência com <strong>1.115 lojas físicas</strong> heterogêneas — variando de
+                    unidades de vizinhança em bairros residenciais até <em>flagships</em> de altíssimo tráfego em
+                    estações e centros metropolitanos.
+                </p>
+                <p>
+                    Historicamente, o desdobramento anual do orçamento corporativo aplicava um <strong>crescimento
+                        linear uniforme (+5,00%)</strong> sobre a receita do ano anterior para todas as filiais. Essa
+                    "régua única" produzia grave distorção gerencial: lojas próximas do teto físico ou cercadas por
+                    concorrentes a menos de 200 metros abandonavam a meta no primeiro trimestre, enquanto unidades em
+                    mercados isolados batiam o orçamento sem esforço incremental. O objetivo deste projeto foi estruturar
+                    uma solução ponta a ponta em <strong>CRISP-DM</strong> para agrupar unidades verdadeiramente
+                    comparáveis e ancorar metas, verbas de <em>Trade Marketing</em>, reposição de <em>Supply Chain</em> e
+                    enquadramento de <em>Expansão</em>.
+                </p>
+            </section>
+
+            <section>
+                <h3 class="text-2xl font-bold text-slate-lightest mb-6 border-l-4 border-cyan pl-4">2. Objetivos e os 5
+                    Critérios de Aceitação Executiva</h3>
+                <p class="mb-4">Em Aprendizado Não Supervisionado não existe variável-alvo (<em>target</em>). Para evitar
+                    agrupamentos matematicamente elegantes porém operacionalmente inúteis, o projeto foi blindado na Fase
+                    1 por cinco requisitos auditáveis:</p>
+                <ul class="space-y-4 my-6 text-slate-light">
+                    <li class="flex items-start gap-3">
+                        <i data-lucide="target" class="w-6 h-6 text-cyan shrink-0 mt-0.5"></i>
+                        <span><span class="font-semibold text-slate-lightest">1. Interpretabilidade &amp; 2.
+                                Acionabilidade Multidisciplinar:</span> Nomenclatura comercial intuitiva e garantia de
+                            que cada cluster direcione políticas distintas para Comercial, Trade Marketing, Supply Chain
+                            e Expansão (se dois grupos levam à mesma decisão, devem ser fundidos).</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i data-lucide="target" class="w-6 h-6 text-cyan shrink-0 mt-0.5"></i>
+                        <span><span class="font-semibold text-slate-lightest">3. Estabilidade Estatística (ARI &ge;
+                                0,80):</span> A meta anual de um gerente não pode mudar por variações na ordem da base ou
+                            subamostragem (remoção de 20% das lojas).</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i data-lucide="target" class="w-6 h-6 text-cyan shrink-0 mt-0.5"></i>
+                        <span><span class="font-semibold text-slate-lightest">4. Superioridade sobre o Baseline Cadastral
+                                &amp; 5. Quantificação Financeira:</span> Superar objetivamente a classificação legada
+                            (<code>tipo_loja</code> e <code>sortimento</code>) em redução de dispersão interna e
+                            variância explicada (&eta;&sup2;), traduzindo os desvios entre pares em potencial financeiro
+                            em Reais (R$).</span>
+                    </li>
+                </ul>
+            </section>
+
+            <section>
+                <h3 class="text-2xl font-bold text-slate-lightest mb-6 border-l-4 border-cyan pl-4">3. Auditoria de Dados
+                    e Engenharia de Atributos (1 Milhão de Linhas &rarr; 1.115 Lojas)</h3>
+                <p class="mb-4">
+                    A base transacional bruta (<code>treino.csv</code>) continha <span
+                        class="font-semibold text-cyan">1.017.209 registros diários</span> (01/01/2013 a 31/07/2015),
+                    cruzada com o cadastro estrutural (<code>loja.csv</code>) de 1.115 unidades. A auditoria exploratória
+                    revelou três armadilhas graves que invalidariam qualquer modelagem ingênua:
+                </p>
+                <ul class="space-y-3 mb-6 text-slate-light text-base">
+                    <li>• <strong>Viés de Calendário Dominical e Dias Sem Venda:</strong> 1.082 lojas (97% da rede) nunca
+                        abrem aos domingos e 54 registros apresentavam loja aberta com faturamento zero. Calcular a média
+                        sobre todos os dias do calendário subestimava em <strong>21,06%</strong> o porte real das lojas
+                        que fecham aos domingos.</li>
+                    <li>• <strong>Apagão Sistêmico de 184 Dias em 180 Lojas:</strong> Exatamente 180 lojas não possuíam
+                        linhas registradas durante todo o 2º semestre de 2014 (01/07/2014 a 31/12/2014). O uso de soma
+                        acumulada de vendas jogava artificialmente <strong>54,7%</strong> dessas lojas no pior quartil da
+                        rede (contra <strong>25,4%</strong> ao usar a média por dia efetivamente operado).</li>
+                    <li>• <strong>Distorção entre Crescimento Anual e Sazonalidade:</strong> Como a rede cresceu entre
+                        2013 e 2015, calcular a sazonalidade agrupando diretamente os meses 1 a 12 penalizaria o 2º
+                        semestre das 180 lojas (registrado apenas em 2013). A solução foi normalizar o faturamento mensal
+                        pela média anual da própria loja antes de extrair o desvio padrão entre os meses.</li>
+                </ul>
+
+                <div class="rounded-xl overflow-hidden bg-navy-900 border border-navy-700 shadow-2xl mb-8">
+                    <div class="flex items-center justify-between px-4 py-3 bg-navy-800 border-b border-navy-700">
+                        <div class="flex gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <span
+                            class="text-xs font-mono text-slate-light px-2 py-1 rounded bg-navy-700 border border-navy-600">Python
+                            — Engenharia de Features Unificada</span>
+                    </div>
+                    <pre class="p-6 overflow-x-auto text-sm font-mono text-cyan/90 leading-relaxed"><code># Filtro estrito de operação efetiva (844.338 transações válidas)
+treino_operando = treino[(treino['aberta'] == 1) & (treino['faturamento'] > 0)].copy()
+
+# Sazonalidade blindada contra o hiato de 6 meses em 2014 (normalização intra-ano)
+treino_operando['ano'] = treino_operando['data'].dt.year
+treino_operando['mes'] = treino_operando['data'].dt.month
+media_loja_ano_mes = treino_operando.groupby(['loja', 'ano', 'mes'])['faturamento'].mean().reset_index(name='venda_media_mes')
+media_ano_loja = media_loja_ano_mes.groupby(['loja', 'ano'])['venda_media_mes'].transform('mean')
+media_loja_ano_mes['venda_relativa_mes'] = media_loja_ano_mes['venda_media_mes'] / media_ano_loja
+
+perfil_mensal = media_loja_ano_mes.groupby(['loja', 'mes'])['venda_relativa_mes'].mean().unstack()
+sazonalidade = perfil_mensal.std(axis=1).rename('sazonalidade')</code></pre>
+                </div>
+
+                <p class="mb-4">
+                    Após análise da matriz de correlação pós-<code>log1p</code>, descartamos variáveis redundantes
+                    (<code>clientes_medios_dia</code> tinha <em>r</em> = 0,82 com <code>venda_media_dia</code>) e variáveis
+                    quase-binárias com inflação de zeros (<code>prop_domingos_abertos</code> com assimetria de 5,97),
+                    consolidando as <strong>6 features contínuas oficiais</strong> escalonadas via
+                    <code>StandardScaler</code>: <code>venda_media_dia</code>, <code>ticket_medio</code>,
+                    <code>efeito_promo</code>, <code>volatilidade</code>, <code>sazonalidade</code> e
+                    <code>distancia_concorrente</code> (imputada pela mediana de 2.330 m nas 3 lojas nulas).
+                </p>
+            </section>
+
+            <section>
+                <h3 class="text-2xl font-bold text-slate-lightest mb-6 border-l-4 border-cyan pl-4">4. Modelagem,
+                    Validação Cruzada (Ward) e Escolha de k = 5</h3>
+                <p class="mb-4">
+                    Em dados reais de varejo, as lojas formam um contínuo multidimensional sem fronteiras vazias. O
+                    coeficiente de Silhueta atingiu seu ponto máximo local em <strong>k = 5 (0,2042)</strong>, enquanto
+                    o dendrograma hierárquico aglomerativo (<strong>Método de Ward</strong>) confirmou um salto
+                    estrutural de distância na transição de k = 6 (22,93) para k = 5 (26,33) e k = 3 (30,94).
+                </p>
+                <p class="mb-4">
+                    O desempate definitivo entre os candidatos <em>k</em> ∈ {2, 3, 5, 8} deu-se pelos critérios de negócio:
+                    <em>k</em> = 2 (ARI = 0,745) e <em>k</em> = 8 (ARI = 0,630) falharam no teste de estabilidade, enquanto
+                    <strong>k = 5 mais que dobrou a redução do desvio padrão intra-cluster frente ao baseline
+                        cadastral</strong> (-14,1%, caindo de R$ 2.353,74 para R$ 2.021,85) e preservou alta
+                    estabilidade em 10 repetições de subamostragem de 80% (ARI médio = 0,9092).
+                </p>
+            </section>
+
+            <section>
+                <h3 class="text-2xl font-bold text-slate-lightest mb-8 border-l-4 border-cyan pl-4">Perspectivas
+                    Integradas</h3>
+
+                <div class="grid md:grid-cols-2 gap-8 text-slate-lightest/90 text-sm md:text-base leading-relaxed">
+
+                    <div
+                        class="bg-navy-800 p-6 rounded-2xl border border-navy-700 hover:border-cyan/30 transition-colors">
+                        <h4 class="text-white font-bold mb-4 flex items-center">
+                            <i data-lucide="pie-chart" class="mr-2 w-5 h-5 text-cyan"></i>
+                            5. Descoberta de Arquétipos e Superioridade sobre o Cadastro
+                        </h4>
+                        <p class="mb-4">
+                            A classificação legada da companhia (<code>tipo_loja</code>) mostrou-se cega para a operação
+                            real: explicava míseros <strong>2,78% da variância do faturamento diário</strong> e
+                            <strong>2,01% da volatilidade</strong> (ARI = 0,1176).
+                        </p>
+                        <p>
+                            Os 5 clusters gerados pelo K-Means elevaram a variância explicada (ANOVA η²) para
+                            <strong>28,33% em vendas (ganho de 10,2x)</strong>, <strong>57,77% em resposta promocional
+                                (6,9x)</strong> e <strong>60,83% em volatilidade (30,3x)</strong>. Além disso, sem
+                            receber nenhuma coluna categórica, o algoritmo isolou organicamente 76,5% das lojas de
+                            altíssimo giro do <code>tipo_loja b</code> no Cluster 4 (<em>Flagship / Alto Fluxo</em>) e
+                            76,1% das lojas de compra abastecedora (<code>tipo_loja d</code>) no Cluster 1
+                            (<em>Destino &amp; Isolada</em>).
+                        </p>
+                    </div>
+
+                    <div
+                        class="bg-navy-800 p-6 rounded-2xl border border-navy-700 hover:border-cyan/30 transition-colors">
+                        <h4 class="text-white font-bold mb-4 flex items-center">
+                            <i data-lucide="calculator" class="mr-2 w-5 h-5 text-cyan"></i>
+                            6. Perspectiva de Controladoria e Calibragem Orçamentária
+                        </h4>
+                        <p class="mb-4">
+                            Na etapa de <em>Deployment</em> para a Diretoria Comercial, aplicou-se a regra de meta
+                            relativa: <strong>2,00% de manutenção</strong> para as 557 lojas acima da mediana do seu
+                            cluster e <strong>2,00% + 25% do gap relativo</strong> para as 558 lojas abaixo da mediana.
+                        </p>
+                        <p>
+                            A auditoria de sanidade financeira revelou uma armadilha clássica de FP&amp;A: embora a
+                            <strong>média aritmética simples das metas fosse de +5,15%</strong>, o crescimento ponderado
+                            da receita da rede atingia apenas <strong>+4,20%</strong> (pois as <em>Flagships</em> de
+                            maior faturamento estavam no topo de seus grupos). Aplicando o <strong>fator multiplicativo
+                                de calibragem ponderada de 1,1916</strong>, garantimos exatamente os <strong>+5,00% de
+                                expansão de receita</strong> prometidos ao Conselho (com piso calibrado de 2,38% e média
+                            simples de 6,13%).
+                        </p>
+                    </div>
+
+                    <div
+                        class="bg-navy-800 p-6 rounded-2xl border border-navy-700 hover:border-cyan/30 transition-colors md:col-span-2">
+                        <h4 class="text-white font-bold mb-4 flex items-center">
+                            <i data-lucide="scale" class="mr-2 w-5 h-5 text-cyan"></i>
+                            7. Governança de Modelos, Riscos Operacionais e Limitações Analíticas
+                        </h4>
+                        <p class="mb-4">
+                            O uso de algoritmos não supervisionados para remuneração variável e metas exige travas de
+                            governança explícitas:
+                        </p>
+                        <ul class="space-y-2 text-slate-light">
+                            <li>• <strong>Associação vs. Causalidade Promocional:</strong> A variável
+                                <code>efeito_promo</code> mede o <em>lift</em> observacional bruto em dias com promoção.
+                                Como campanhas não foram randomizadas, decisões de realocação massiva de verba de
+                                <em>Trade Marketing</em> devem ser precedidas de testes pilotos controlando calendário e
+                                margem líquida pós-desconto.</li>
+                            <li>• <strong>Trava de Teto e Restrições Físicas:</strong> Na simulação calibrada, lojas no
+                                extremo inferior de seus clusters receberam metas de até <strong>37,70%</strong>. Antes
+                                da homologação executiva, supervisores regionais devem auditar se a defasagem decorre de
+                                gestão ineficiente ou de barreiras físicas intransponíveis (obras viárias, área de venda
+                                restrita ou falta de estacionamento).</li>
+                            <li>• <strong>Inferência Determinística Sem Retreino:</strong> Para evitar que a inauguração
+                                de novas lojas desloque os centroides e altere metas vigentes no meio do exercício
+                                fiscal, o pacote de produção (<code>modelo_clusterizacao_varejo.joblib</code>) executa
+                                estritamente <code>.transform()</code> e <code>.predict()</code>, congelando a taxonomia
+                                durante o ciclo anual.</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </section>
+
+            <section>
+                <h3 class="text-2xl font-bold text-slate-lightest mb-6 border-l-4 border-cyan pl-4">8. Pipeline de
+                    Produção para Novas Lojas (MLOps)</h3>
+                <p class="mb-6">
+                    Para permitir que a área de Expansão enquadre novas inaugurações sem retreinar o algoritmo, o
+                    pipeline vencedor foi serializado com <code>joblib</code> contendo o <code>StandardScaler</code>
+                    ajustado, o modelo <code>KMeans</code> (k = 5), a lista ordenada de features e o dicionário de
+                    personas comerciais:
+                </p>
+
+                <div class="rounded-xl overflow-hidden bg-navy-900 border border-navy-700 shadow-2xl mb-8">
+                    <div class="flex items-center justify-between px-4 py-3 bg-navy-800 border-b border-navy-700">
+                        <div class="flex gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <span
+                            class="text-xs font-mono text-slate-light px-2 py-1 rounded bg-navy-700 border border-navy-600">Python
+                            — Inferência em Produção Sem Retreino</span>
+                    </div>
+                    <pre class="p-6 overflow-x-auto text-sm font-mono text-cyan/90 leading-relaxed"><code>import joblib
+import numpy as np
+import pandas as pd
+
+# 1. Carregar artefato serializado do pipeline vencedor
+pipeline = joblib.load("modelo_clusterizacao_varejo.joblib")
+escalador = pipeline["escalador"]
+kmeans = pipeline["modelo_kmeans"]
+colunas = pipeline["colunas_modelo"]
+nomes = pipeline["nomes_clusters"]
+
+# 2. Transformar novas lojas com log1p + .transform() e predizer com .predict()
+df_novas = pd.read_csv("lojas_novas_exemplo.csv")
+matriz_novas = escalador.transform(np.log1p(df_novas[colunas]))
+
+df_novas["cluster_predito"] = kmeans.predict(matriz_novas)
+df_novas["nome_cluster_predito"] = df_novas["cluster_predito"].map(nomes)</code></pre>
+                </div>
+            </section>
+
+            <section>
+                <h3 class="text-2xl font-bold text-slate-lightest mb-6 border-l-4 border-cyan pl-4">9. Impacto e
+                    Entregáveis Executivos</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div
+                        class="bg-gradient-to-br from-navy-800 to-navy-900 p-6 rounded-2xl border border-cyan/30 text-center">
+                        <h4 class="text-slate-lightest font-bold text-lg mb-2">10,2x Mais Poder Explicativo</h4>
+                        <p class="text-slate text-sm">Substituição do cadastro estático (2,78%) por 5 clusters que
+                            explicam 28,33% da variância de vendas e 60,83% da volatilidade operacional.</p>
+                    </div>
+                    <div
+                        class="bg-gradient-to-br from-navy-800 to-navy-900 p-6 rounded-2xl border border-cyan/30 text-center">
+                        <h4 class="text-slate-lightest font-bold text-lg mb-2">Orçamento Cravado em +5,00%</h4>
+                        <p class="text-slate text-sm">Calibragem ponderada (fator 1,1916) eliminando o déficit de -0,80
+                            p.p. da média simples e gerando a planilha executiva para 1.115 lojas.</p>
+                    </div>
+                    <div
+                        class="bg-gradient-to-br from-navy-800 to-navy-900 p-6 rounded-2xl border border-cyan/30 text-center">
+                        <h4 class="text-slate-lightest font-bold text-lg mb-2">Cenário de R$ 50,9 Mi / Ano</h4>
+                        <p class="text-slate text-sm">Mapeamento de R$ 203,75 milhões em gap anual bruto nas lojas abaixo
+                            do P50, projetando R$ 50,94 milhões/ano sob captura moderada de 25%.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 class="text-2xl font-bold text-slate-lightest mb-6 border-l-4 border-cyan pl-4">10. Conclusão</h3>
+                <p class="mb-4">
+                    Este estudo demonstra como o Aprendizado Não Supervisionado só atinge maturidade executiva quando
+                    submetido à rigorosa <strong>auditoria de integridade de dados e engenharia financeira de
+                        Controladoria</strong>. Sem o tratamento do hiato temporal de 2014, da assimetria espacial e da
+                    ponderação de receita na etapa de <em>deploy</em>, o algoritmo produziria metas injustas e um
+                    orçamento deficitário perante o Conselho.
+                </p>
+            </section>
+
+        </article>
+
+        <!-- COMPARTILHAMENTO E CTA -->
+        <div class="mt-20 pt-12 border-t border-navy-700 max-w-6xl mx-auto">
+
+            <div class="text-center mb-8">
+                <h3 class="text-xl text-slate-lightest font-bold">Gostou da profundidade analítica deste projeto?</h3>
+                <p class="text-slate text-sm mt-2">Compartilhe este case de Machine Learning e Controladoria Estratégica
+                    com sua rede profissional.</p>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-4">
+
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://darlansandro.com.br/projeto_clusterizacao_lojas-pt.html"
+                    target="_blank"
+                    class="flex items-center gap-3 bg-[#0077b5] text-white px-6 py-3 rounded-lg font-bold hover:-translate-y-1 transition-transform shadow-lg hover:shadow-cyan/20">
+                    <i data-lucide="linkedin" size="20"></i>
+                    LinkedIn
+                </a>
+
+                <a href="https://twitter.com/intent/tweet?text=Confira%20este%20case%20de%20Machine%20Learning%20(K-Means)%20aplicado%20a%20Metas%20Comerciais%20e%20FP%26A%20em%201.115%20lojas&url=https://darlansandro.com.br/projeto_clusterizacao_lojas-pt.html"
+                    target="_blank"
+                    class="flex items-center gap-3 bg-black border border-navy-700 text-white px-6 py-3 rounded-lg font-bold hover:-translate-y-1 transition-transform shadow-lg">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path
+                            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z">
+                        </path>
+                    </svg>
+                    X (Twitter)
+                </a>
+
+                <a href="https://api.whatsapp.com/send?text=Veja%20este%20projeto%20de%20Machine%20Learning%20e%20FP%26A%20para%20Clusteriza%C3%A7%C3%A3o%20e%20Metas%20de%201.115%20Lojas:%20https://darlansandro.com.br/projeto_clusterizacao_lojas-pt.html"
+                    target="_blank"
+                    class="flex items-center gap-3 bg-[#25D366] text-white px-6 py-3 rounded-lg font-bold hover:-translate-y-1 transition-transform shadow-lg">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path
+                            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                    </svg>
+                    WhatsApp
+                </a>
+
+            </div>
+
+            <div class="mt-8 text-center">
+                <p class="text-slate text-sm mb-4">Sua organização precisa alinhar Ciência de Dados, Controladoria e
+                    Planejamento Comercial?</p>
+                <a href="index.html#contact"
+                    class="inline-flex items-center gap-2 border border-cyan text-cyan hover:bg-cyan hover:text-navy-900 px-8 py-3 rounded-xl font-bold transition-all uppercase text-sm tracking-widest">
+                    <i data-lucide="mail" size="18"></i>
+                    Falar com Darlan
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="py-12 px-6 text-center border-t border-navy-800 mt-12">
+        <div class="flex justify-center gap-6 mb-8 text-slate hover:text-cyan">
+            <a href="https://www.linkedin.com/in/darlansandro" target="_blank"
+                class="hover:-translate-y-1 transition-all" title="Meu LinkedIn">
+                <i data-lucide="linkedin"></i>
+            </a>
+            <a href="index.html#contact" class="hover:-translate-y-1 transition-all"
+                title="Ir para Formulário de Contato">
+                <i data-lucide="mail"></i>
+            </a>
+            <a href="https://github.com/DarlanSandro" target="_blank" class="hover:-translate-y-1 transition-all"
+                title="GitHub">
+                <i data-lucide="github"></i>
+            </a>
+        </div>
+        <p class="font-mono text-xs text-slate-light">© 2026 Desenvolvido por Darlan Sandro.</p>
+        <p class="font-mono text-[10px] text-slate/50 mt-2 tracking-widest uppercase">High Performance Tax Intelligence
+            &amp; Data Science
+        </p>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // Lógica do Menu Mobile e Scroll
+        const menuBtn = document.getElementById('menu-btn');
+        const closeMenu = document.getElementById('close-menu');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+        const navbar = document.getElementById('navbar');
+
+        function toggleMenu() {
+            mobileMenu.classList.toggle('translate-x-full');
+            document.body.classList.toggle('overflow-hidden');
+        }
+
+        menuBtn.addEventListener('click', toggleMenu);
+        closeMenu.addEventListener('click', toggleMenu);
+        mobileLinks.forEach(link => link.addEventListener('click', toggleMenu));
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('nav-scrolled');
+            } else {
+                navbar.classList.remove('nav-scrolled');
+            }
+        });
+
+        // =========================================================================
+        // MOTOR DE INFERÊNCIA K-MEANS EM TEMPO REAL (PESOS EXATOS DO SCIKIT-LEARN)
+        // =========================================================================
+        const SCALER_MEAN = [
+            8.793412958717553,
+            2.3472803382392557,
+            0.33867629945553107,
+            0.23919413720801508,
+            0.08727986050925095,
+            7.645736024507994
+        ];
+
+        const SCALER_SCALE = [
+            0.3137560291461576,
+            0.18980845286775452,
+            0.12552914920480562,
+            0.045308114293167424,
+            0.024373330349061254,
+            1.549450209287587
+        ];
+
+        const KMEANS_CENTERS = [
+            [-0.5603770151632802, -0.586281635492217, 0.2624557031125545, 0.0805528022108382, -0.2808145372992176, -0.7004346952671651],
+            [0.14146518429415378, 0.8396885540683221, -0.33914906737902106, -0.34796583761314964, 0.039076783318572034, 0.6185737370407931],
+            [-0.2574821595505484, -0.719559973835788, -0.5367018704139604, 0.7028768666278838, 2.44121595367429, 0.21252420535359914],
+            [-0.36828610024069997, 0.12027089646908135, 1.540917270103199, 1.5628248185868951, 0.08902441785798045, 0.3977556354193069],
+            [1.0199276482704058, -0.8352520862493233, -0.8692462536540326, -1.0224394015160343, -0.6008268678095703, -0.731879046419249]
+        ];
+
+        const FATOR_CALIBRACAO = 1.19163225;
+
+        const CLUSTER_INFO = {
+            0: {
+                nome: "Cluster 0 — Padrão Bairro",
+                benchmark: 5476.37,
+                desc: "Unidade de vizinhança urbana sob forte pressão competitiva local (< 840m) e compras regulares de reposição.",
+                comercial: "Meta por expansão de itens por cesta (média R$ 5.718/dia; ticket R$ 8,43).",
+                trade: "Ofertas de combate local para defender tráfego frente a concorrentes próximos.",
+                supply: "Reposição diária estável de itens essenciais (Curva A básica), sem estoque inflado.",
+                expansao: "Benchmark para novas lojas de vizinhança urbana em praças adensadas."
+            },
+            1: {
+                nome: "Cluster 1 — Destino & Isolada",
+                benchmark: 6959.92,
+                desc: "Loja geograficamente protegida da concorrência (mediana 5,8 km), com compras abastecedoras de ticket elevado.",
+                comercial: "Meta por margem bruta e rentabilidade por visita (maior ticket: R$ 11,35).",
+                trade: "Baixa verba de desconto; foco em ativação de marca e linhas premium/especialidades.",
+                supply: "Sortimento amplo de maior valor agregado, com lotes de segurança espaçados.",
+                expansao: "Referência para prospecção de pontos isolados (> 5 km) com amplo estacionamento."
+            },
+            2: {
+                nome: "Cluster 2 — Sazonal / Turística",
+                benchmark: 6324.80,
+                desc: "Operação com forte oscilação de calendário anual (15,88% de sazonalidade) e alta taxa de abertura dominical.",
+                comercial: "Meta trimestral flexível indexada à curva sazonal do calendário turístico.",
+                trade: "Alocação massiva concentrada nos picos de férias, verão/fim de ano e domingos.",
+                supply: "Estoque elástico: acúmulo pré-pico sazonal e enxugamento drástico na baixa estação.",
+                expansao: "Enquadramento de pontos em balneários, regiões turísticas ou polos sazonais."
+            },
+            3: {
+                nome: "Cluster 3 — Viciada em Promoção",
+                benchmark: 5909.24,
+                desc: "Unidade altamente elástica a descontos (+70,8% de lift promocional) e elevada volatilidade diária (36,4%).",
+                comercial: "Meta condicionada à margem líquida pós-desconto para evitar erosão de resultado.",
+                trade: "Maior verba proporcional em encartes e tabloides para ativar tráfego sensível a preço.",
+                supply: "Dimensionamento de pulso (estoque pulmão promocional) com reposição rápida pós-evento.",
+                expansao: "Referência para inaugurações em regiões de alta sensibilidade promocional."
+            },
+            4: {
+                nome: "Cluster 4 — Flagship / Alto Fluxo",
+                benchmark: 8837.11,
+                desc: "Unidade central de altíssimo tráfego orgânico (1.235 clientes/dia; R$ 9.545/dia) e baixa dependência de promoções.",
+                comercial: "Meta por giro de volume, vazão de fila e conversão de fluxo de passagem.",
+                trade: "Investimento em exposição de PDV, pontas de gôndola e check-out (sem queima de margem).",
+                supply: "Reposição contínua em múltiplos turnos com tolerância zero a ruptura na Curva A.",
+                expansao: "Modelo-alvo para pontos em terminais de transporte, calçadões e eixos centrais."
+            }
+        };
+
+        function loadPreset(venda, ticket, promo, vol, saz, dist) {
+            document.getElementById('inp-venda').value = venda;
+            document.getElementById('inp-ticket').value = ticket;
+            document.getElementById('inp-promo').value = promo;
+            document.getElementById('inp-vol').value = vol;
+            document.getElementById('inp-saz').value = saz;
+            document.getElementById('inp-dist').value = dist;
+            runInference();
+        }
+
+        function runInference() {
+            const venda = parseFloat(document.getElementById('inp-venda').value);
+            const ticket = parseFloat(document.getElementById('inp-ticket').value);
+            const promo = parseFloat(document.getElementById('inp-promo').value);
+            const vol = parseFloat(document.getElementById('inp-vol').value);
+            const saz = parseFloat(document.getElementById('inp-saz').value);
+            const dist = parseFloat(document.getElementById('inp-dist').value);
+
+            // Atualiza labels dos sliders
+            document.getElementById('val-venda').textContent = `R$ ${venda.toLocaleString('pt-BR')}`;
+            document.getElementById('val-ticket').textContent = `R$ ${ticket.toFixed(2).replace('.', ',')}`;
+            document.getElementById('val-promo').textContent = `${promo >= 0 ? '+' : ''}${(promo * 100).toFixed(1).replace('.', ',')}%`;
+            document.getElementById('val-vol').textContent = `${(vol * 100).toFixed(1).replace('.', ',')}%`;
+            document.getElementById('val-saz').textContent = `${(saz * 100).toFixed(1).replace('.', ',')}%`;
+            document.getElementById('val-dist').textContent = `${dist.toLocaleString('pt-BR')} m`;
+
+            // 1. Transformação log1p + Escalonamento Z-score
+            const raw = [venda, ticket, promo, vol, saz, dist];
+            const z = raw.map((val, i) => (Math.log1p(val) - SCALER_MEAN[i]) / SCALER_SCALE[i]);
+
+            // 2. Cálculo das distâncias euclidianas aos 5 centroides
+            const dists = KMEANS_CENTERS.map((center, cIdx) => {
+                let sumSq = 0;
+                for (let i = 0; i < 6; i++) {
+                    const diff = z[i] - center[i];
+                    sumSq += diff * diff;
+                }
+                return { cluster: cIdx, dist: Math.sqrt(sumSq) };
+            });
+
+            // 3. Encontra o cluster vencedor (menor distância)
+            const sorted = [...dists].sort((a, b) => a.dist - b.dist);
+            const winner = sorted[0].cluster;
+            const info = CLUSTER_INFO[winner];
+
+            // 4. Calcula Gap Relativo e Meta Calibrada da Loja
+            const gapPct = (info.benchmark - venda) / venda;
+            const metaInicial = gapPct > 0 ? (0.02 + 0.25 * gapPct) : 0.02;
+            const metaFinalPct = metaInicial * FATOR_CALIBRACAO * 100;
+
+            // Atualiza UI de saída
+            document.getElementById('out-cluster-badge').textContent = info.nome;
+            document.getElementById('out-cluster-desc').textContent = info.desc;
+            document.getElementById('out-benchmark').textContent = `R$ ${info.benchmark.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+
+            const gapEl = document.getElementById('out-gap');
+            gapEl.textContent = `${gapPct >= 0 ? '+' : ''}${(gapPct * 100).toFixed(2).replace('.', ',')}%`;
+            gapEl.className = gapPct > 0
+                ? "text-base md:text-lg font-bold text-amber-400 font-mono"
+                : "text-base md:text-lg font-bold text-emerald-400 font-mono";
+
+            document.getElementById('out-meta').textContent = `+${metaFinalPct.toFixed(2).replace('.', ',')}%`;
+
+            const prioEl = document.getElementById('out-prioridade');
+            if (gapPct > 0) {
+                prioEl.textContent = "Ação Necessária (Abaixo do P50)";
+                prioEl.className = "px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-red-500/20 text-red-300 border border-red-500/30";
+            } else {
+                prioEl.textContent = "Acompanhamento (Acima do P50)";
+                prioEl.className = "px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+            }
+
+            // Atualiza barras de distância
+            const maxDist = Math.max(...dists.map(d => d.dist));
+            const barsHtml = dists.map(d => {
+                const isWin = d.cluster === winner;
+                const widthPct = Math.max(12, Math.round((d.dist / maxDist) * 100));
+                return `
+                    <div class="flex items-center gap-2">
+                        <span class="w-44 truncate ${isWin ? 'text-cyan font-bold' : 'text-slate'}">
+                            ${isWin ? '▶ ' : ''}C${d.cluster}: ${CLUSTER_INFO[d.cluster].nome.split('—')[1].trim()}
+                        </span>
+                        <div class="flex-1 bg-navy-800 h-2.5 rounded-full overflow-hidden">
+                            <div class="${isWin ? 'bg-cyan' : 'bg-navy-700'} h-full rounded-full transition-all duration-300" style="width: ${widthPct}%"></div>
+                        </div>
+                        <span class="w-14 text-right ${isWin ? 'text-cyan font-bold' : 'text-slate'}">${d.dist.toFixed(2)}</span>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('bars-distancias').innerHTML = barsHtml;
+
+            // Atualiza os 4 cards de ação
+            document.getElementById('act-comercial').textContent = info.comercial;
+            document.getElementById('act-trade').textContent = info.trade;
+            document.getElementById('act-supply').textContent = info.supply;
+            document.getElementById('act-expansao').textContent = info.expansao;
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-mono font-bold bg-navy-900 text-slate-light border border-navy-700 hover:border-cyan/40 transition-all";
+            });
+            document.getElementById('btn-' + tabId).className = "tab-btn px-4 py-2 rounded-xl text-xs font-mono font-bold bg-cyan text-navy-900 transition-all";
+        }
+
+        // Inicializa com a Loja 9001
+        runInference();
+    </script>
+</body>
+
+</html>
